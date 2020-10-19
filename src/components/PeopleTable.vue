@@ -9,6 +9,8 @@
 </template>
 
 <script>
+import { PEOPLE_REQUEST } from '@/store/actions';
+
 export default {
   name: 'PeopleTable',
   data() {
@@ -20,7 +22,6 @@ export default {
           filterOptions: {
             enabled: true, // enable filter for this column
             placeholder: 'Filter by name', // placeholder for filter input
-            filterFn: this.columnFilterFn,
             trigger: 'keyup',
           },
         },
@@ -30,13 +31,6 @@ export default {
           type: 'number',
         },
         {
-          label: 'Created On',
-          field: 'createdAt',
-          type: 'date',
-          dateInputFormat: 'yyyy-MM-dd',
-          dateOutputFormat: 'MMM do yy',
-        },
-        {
           label: 'Percent',
           field: 'score',
           type: 'percentage',
@@ -44,22 +38,22 @@ export default {
       ],
       rows: [
         {
-          id: 1, name: 'John', age: 20, createdAt: '', score: 0.03343,
+          id: 1, name: 'John', age: 20, score: 0.03343,
         },
         {
-          id: 2, name: 'Jane', age: 24, createdAt: '2011-10-31', score: 0.03343,
+          id: 2, name: 'Jane', age: 24, score: 0.03343,
         },
         {
-          id: 3, name: 'Susan', age: 16, createdAt: '2011-10-30', score: 0.03343,
+          id: 3, name: 'Susan', age: 16, score: 0.03343,
         },
         {
-          id: 4, name: 'Chris', age: 55, createdAt: '2011-10-11', score: 0.03343,
+          id: 4, name: 'Chris', age: 55, score: 0.03343,
         },
         {
-          id: 5, name: 'Dan', age: 40, createdAt: '2011-10-21', score: 0.03343,
+          id: 5, name: 'Dan', age: 40, score: 0.03343,
         },
         {
-          id: 6, name: 'John', age: 20, createdAt: '2011-10-31', score: 0.03343,
+          id: 6, name: 'John', age: 20, score: 0.03343,
         },
       ],
     };
@@ -68,6 +62,9 @@ export default {
     onCellClick(params) {
       console.log(params);
     },
+  },
+  async mounted() {
+    await this.$store.dispatch(PEOPLE_REQUEST);
   },
 };
 </script>
