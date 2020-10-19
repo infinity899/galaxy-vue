@@ -4,7 +4,13 @@
       :columns="columns"
       :rows="rows"
       @on-cell-click="onCellClick"
-    />
+    >
+      <template slot="table-row" slot-scope="props">
+        <span v-if="props.column.field == 'planet'">
+          <a @click="handlePlanet">check planet details</a>
+        </span>
+      </template>
+    </vue-good-table>
   </div>
 </template>
 
@@ -26,45 +32,61 @@ export default {
           },
         },
         {
-          label: 'Age',
-          field: 'age',
+          label: 'Height',
+          field: 'height',
           type: 'number',
         },
         {
-          label: 'Percent',
-          field: 'score',
-          type: 'percentage',
+          label: 'Mass',
+          field: 'mass',
+          type: 'number',
+        },
+        {
+          label: 'Created',
+          field: 'created',
+          type: 'string',
+        },
+        {
+          label: 'Edited',
+          field: 'edited',
+          type: 'string',
+        },
+        {
+          label: 'Planet name',
+          field: 'planet',
+          type: 'string',
         },
       ],
-      rows: [
-        {
-          id: 1, name: 'John', age: 20, score: 0.03343,
-        },
-        {
-          id: 2, name: 'Jane', age: 24, score: 0.03343,
-        },
-        {
-          id: 3, name: 'Susan', age: 16, score: 0.03343,
-        },
-        {
-          id: 4, name: 'Chris', age: 55, score: 0.03343,
-        },
-        {
-          id: 5, name: 'Dan', age: 40, score: 0.03343,
-        },
-        {
-          id: 6, name: 'John', age: 20, score: 0.03343,
-        },
-      ],
+      rows: [],
     };
   },
   methods: {
+    formatDate(date) {
+      return date.match(/.+?(?=T)/)[0]; // @TODO get time as well
+    },
+    handlePlanet() {
+      console.log('awesome');
+    },
     onCellClick(params) {
-      console.log(params);
+      console.log(params.rowIndex);
+    },
+    populateTable() {
+      this.$store.getters.people.forEach((person, i) => {
+        const tempPerson = {
+          id: i,
+        };
+        tempPerson.name = person.name;
+        tempPerson.height = person.height;
+        tempPerson.mass = person.mass;
+        tempPerson.created = this.formatDate(person.created);
+        tempPerson.edited = this.formatDate(person.edited);
+        this.rows.push(tempPerson);
+      });
     },
   },
   async mounted() {
     await this.$store.dispatch(PEOPLE_REQUEST);
+    this.populateTable();
   },
 };
 </script>
