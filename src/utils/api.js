@@ -34,3 +34,13 @@ export async function getPeople() {
   const data = await request(config);
   return data;
 }
+
+export async function getPlanet(data) {
+  const config = jsonConfig({});
+  const resp = await axios.create({
+    baseURL: data,
+    timeout: 5000,
+    method: 'GET',
+  }).request(config);
+  return resp;
+}

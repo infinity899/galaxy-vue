@@ -22,7 +22,7 @@ const mutations = {
   },
   [PEOPLE_FAILURE]: (peopleState, err) => {
     peopleState.status = 'error';
-    peopleState.error = err;
+    peopleState.errors = err;
   },
   [PEOPLE_REQUEST]: (peopleState) => {
     peopleState.status = 'loading';
@@ -33,7 +33,6 @@ const actions = {
   [PEOPLE_REQUEST]: async ({ commit }) => {
     commit(PEOPLE_REQUEST);
     const resp = await getPeople();
-    console.log(resp);
     if (resp.status === 200) {
       const people = resp.data.results;
       commit(PEOPLE_SUCCESS, people);
