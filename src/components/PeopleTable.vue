@@ -3,12 +3,14 @@
     <vue-good-table
       :columns="columns"
       :rows="rows"
-      @on-cell-click="onCellClick"
       theme="black-rhino"
     >
       <template slot="table-row" slot-scope="props">
         <span v-if="props.column.field == 'planet'">
-          <a class="planet-link">Check planet</a>
+          <a
+            class="planet-link"
+            @click="showPlanetDetails(props.row.planet)"
+          >{{ props.row.planet }}</a>
         </span>
       </template>
     </vue-good-table>
@@ -21,8 +23,7 @@
 </template>
 
 <script>
-import { PEOPLE_REQUEST } from '@/store/actions';
-import { getPlanet } from '@/utils/api';
+import { PEOPLE_REQUEST, PLANETS_REQUEST, PEOPLE_MATCH_PLANET } from '@/store/actions';
 import Planet from '@/components/Planet.vue';
 
 export default {
@@ -73,6 +74,7 @@ export default {
       planet: {},
       showPlanet: false,
       error: '',
+      homeWorlds: [],
     };
   },
   computed: {
@@ -84,30 +86,31 @@ export default {
     formatDate(date) {
       return new Date(date).toLocaleString();
     },
-    async onCellClick(params) {
-      if (params.column.field === 'planet') {
-        try {
-          const planet = await getPlanet(params.row.planet);
-          this.planet = planet.data;
-          this.showPlanet = true;
-        } catch (e) {
-          this.error = e.message;
-        }
-      }
+    showPlanetDetails(payloadPlanet) {
+      this.planet = this.$store.getters.planets
+        .find((planet) => planet.name.toUpperCase() === payloadPlanet.toUpperCase());
+      this.showPlanet = true;
+    },
+    async handlePlanets() {
+      await this.people.forEach((person) => {
+        const { homeworld } = person;
+        // eslint-disable-next-line no-unused-expressions
+        this.homeWorlds.indexOf(homeworld) === -1 ? this.homeWorlds.push(homeworld) : ''; // create array of unique planets
+      });
     },
     populateTable() {
       this.people.forEach((person, i) => {
         const {
-          name, height, mass, created, edited, homeworld,
+          name, height, mass, created, edited, planet,
         } = person;
         const tempPerson = {
           id: i,
           name,
           height,
           mass,
+          planet: planet.name,
           created: this.formatDate(created),
           edited: this.formatDate(edited),
-          planet: homeworld,
         };
         this.rows.push(tempPerson);
       });
@@ -115,10 +118,19 @@ export default {
     handleClosePlanet() {
       this.showPlanet = false;
     },
+    async getPlanets() {
+      const requests = this.homeWorlds.map(async (planet) => {
+        await this.$store.dispatch(PLANETS_REQUEST, planet);
+      });
+      await Promise.all(requests);
+    },
   },
-  async mounted() {
-    await this.$store.dispatch(PEOPLE_REQUEST);
-    this.populateTable();
+  async created() {
+    await this.$store.dispatch(PEOPLE_REQUEST); // get people from API
+    await this.handlePlanets(); // filter unique planets of people
+    await this.getPlanets(); // request planets details
+    await this.$store.dispatch(PEOPLE_MATCH_PLANET); // add planet to each person
+    this.populateTable(); // populate table
   },
 };
 </script>
